@@ -1,14 +1,12 @@
-require 'restclient'
 require 'yaml'
 require 'open-uri'
 require 'base64'
 
 require './lib/parser'
 require './lib/utils'
+require './lib/transfer'
 
-cookie = {
-  '.ASPXAUTH' => File.open('cookie.txt', 'r') {|file| file.read}.strip
-}
+cookie = File.open('cookie.txt', 'r') {|file| file.read}.strip
 
 def urls()
   url_arr = []
@@ -44,10 +42,9 @@ def all_hashes(cookie)
   urls.map do |url|
     sleep 0.01
     puts "doing #{url}"
-    html = RestClient.get("http://www.pepperplate.com/recipes/#{url}",
-                          cookies: cookie)
+    page = Transfer.new(cookie).page("http://www.pepperplate.com/recipes/#{url}")
 
-    page_to_hash(html)
+    page_to_hash(page)
   end
 end
 
