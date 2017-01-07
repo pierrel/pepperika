@@ -1,8 +1,9 @@
 require 'restclient'
-require 'nokogiri'
 require 'yaml'
 require 'open-uri'
 require 'base64'
+
+require './lib/parser'
 
 cookie = {
   '.ASPXAUTH' => File.open('cookie.txt', 'r') {|file| file.read}.strip
@@ -19,68 +20,25 @@ def urls()
   url_arr
 end
 
-def name(doc)
-   doc.css('.recipedet h2>span').text
-end
-
-def ingredients(doc)
-  doc.css('ul.inggroups ul.inggroupitems li.item span.content').map{|ing|
-    quantity = ing.css('.ingquantity').text
-    ingredient = ing.children.last.text.gsub("\r|\n", '').strip
-    
-    if quantity.empty?
-      ingredient
-    else
-      "#{quantity} #{ingredient}"
-    end
-  }
-end
-
-def directions(doc)
-  doc.css('.dirgroups .dirgroupitems li span').map{|dir| dir.text}
-end
-
-def servings(doc)
-  doc.css('#cphMiddle_cphMain_lblYield').text
-end
-
-def recipe_source(doc)
-  source_el = doc.css('#cphMiddle_cphSidebar_hlOriginalRecipe')
-  if source_el.empty?
-    nil
-  else
-    source_el.attribute('href').value
-  end
-end
-
-def image_url(doc)
-  image = doc.css ".recipedet .imagecontainer img"
-  if image.empty?
-    nil
-  else
-    image.attribute('src').value
-  end
-end
-
 def url_to_string(image_url)
   Base64.encode64(open(image_url) {|io| io.read})
 end
 
 def recipe_to_hash(url, cookie)
   resp = RestClient.get(url, cookies: cookie)
-  doc = Nokogiri::HTML(resp)
+  parser = Parser.new(resp)
 
   attrs = {
-p    'name' => name(doc),
-    'servings' => servings(doc),
-    'ingredients' => ingredients(doc),
-    'directions' => directions(doc),
+    'name' => parser.name,
+    'servings' => parser.servings,
+    'ingredients' => parser.ingredients,
+    'directions' => parser.directions,
   }
 
-  img = image_url(doc)
+  img = parser.photo_url
   attrs['photo'] = url_to_string(img) if img
 
-  src = recipe_source(doc)
+  src = parser.source_url
   attrs['source_url'] = src if src
 
   attrs
@@ -102,6 +60,11 @@ def write_all_hashes(cookie)
   end
 end
 
+write_all_hashes(cookie)
+
+
+
+
 def convert_yaml()
   data = YAML.load_file('all_recipes.yml')
   data.each do |recipe|
@@ -109,12 +72,6 @@ def convert_yaml()
     puts "doing #{recipe['name']}"
     if recipe.has_key?('image_url')
       recipe['photo'] = Base64.encode64(open(recipe['image_url']) {|io| io.read})
-      recipe.delete('image_url')
-    end
-
-    if recipe.has_key?('source')
-      recipe['source_url'] = recipe['source']
-      recipe.delete('source')
     end
 
     recipe['directions'] = recipe['directions'].each_with_index.map{|str, i|
@@ -131,8 +88,3 @@ def convert_yaml()
     file.write(data.to_yaml)
   end
 end
-
-convert_yaml
-
-
-
