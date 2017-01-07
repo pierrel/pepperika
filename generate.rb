@@ -53,7 +53,7 @@ def all_hashes(cookie)
 end
 
 def write_all_hashes(cookie)
-  File.open("all_recipes.yml", "w") do |file|
+  File.open("recipes.yml", "w") do |file|
     file.write(all_hashes(cookie).to_yaml)
   end
 end
