@@ -4,6 +4,7 @@ require 'open-uri'
 require 'base64'
 
 require './lib/parser'
+require './lib/utils'
 
 cookie = {
   '.ASPXAUTH' => File.open('cookie.txt', 'r') {|file| file.read}.strip
@@ -20,10 +21,6 @@ def urls()
   url_arr
 end
 
-def url_to_string(image_url)
-  Base64.encode64(open(image_url) {|io| io.read})
-end
-
 def recipe_to_hash(url, cookie)
   resp = RestClient.get(url, cookies: cookie)
   parser = Parser.new(resp)
@@ -36,7 +33,7 @@ def recipe_to_hash(url, cookie)
   }
 
   img = parser.photo_url
-  attrs['photo'] = url_to_string(img) if img
+  attrs['photo'] = Utils.url_to_string(img) if img
 
   src = parser.source_url
   attrs['source_url'] = src if src
