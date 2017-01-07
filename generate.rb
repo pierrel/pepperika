@@ -25,8 +25,10 @@ def page_to_hash(html)
   attrs = {
     'name' => parser.name,
     'servings' => parser.servings,
-    'ingredients' => parser.ingredients,
-    'directions' => parser.directions,
+    'ingredients' => parser.ingredients.join("\n"),
+    'directions' => parser.directions.each_with_index.map{|str, i|
+      "#{i+1}. #{str}"
+    }.join("\n\n")
   }
 
   img = parser.photo_url
@@ -57,28 +59,3 @@ def write_all_hashes(cookie)
 end
 
 write_all_hashes(cookie)
-
-
-def convert_yaml()
-  data = YAML.load_file('all_recipes.yml')
-  data.each do |recipe|
-    sleep 0.1
-    puts "doing #{recipe['name']}"
-    if recipe.has_key?('image_url')
-      recipe['photo'] = Base64.encode64(open(recipe['image_url']) {|io| io.read})
-    end
-
-    recipe['directions'] = recipe['directions'].each_with_index.map{|str, i|
-      "#{i+1}. #{str}"
-    }.join("\n\n")
-
-    recipe.each_pair do |key, value|
-      recipe[key] = value.join("\n") if value.is_a?(Array)
-    end
-  end
-
-  
-  File.open("complete_recipes.yml", "w") do |file|
-    file.write(data.to_yaml)
-  end
-end
