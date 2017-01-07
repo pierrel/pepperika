@@ -1,6 +1,6 @@
 require 'nokogiri'
 
-# Knows how to parse the pages
+# Knows how to parse html from the website
 
 class Parser
   def initialize(html)
@@ -47,6 +47,12 @@ class Parser
       nil
     else
       image.attribute('src').value
+    end
+  end
+
+  def recipe_links
+    doc.css('.item a').map do |link|
+      link.attribute('href').value
     end
   end
 

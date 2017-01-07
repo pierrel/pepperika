@@ -39,10 +39,12 @@ def page_to_hash(html)
 end
 
 def all_hashes(cookie)
-  urls.map do |url|
+  transfer = Transfer.new(cookie)
+  
+  transfer.pages.take(1).map do |url|
     sleep 0.01
     puts "doing #{url}"
-    page = Transfer.new(cookie).page("http://www.pepperplate.com/recipes/#{url}")
+    page = transfer.page(url)
 
     page_to_hash(page)
   end
@@ -55,8 +57,6 @@ def write_all_hashes(cookie)
 end
 
 write_all_hashes(cookie)
-
-
 
 
 def convert_yaml()
