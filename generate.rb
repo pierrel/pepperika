@@ -21,9 +21,8 @@ def urls()
   url_arr
 end
 
-def recipe_to_hash(url, cookie)
-  resp = RestClient.get(url, cookies: cookie)
-  parser = Parser.new(resp)
+def page_to_hash(html)
+  parser = Parser.new(html)
 
   attrs = {
     'name' => parser.name,
@@ -45,9 +44,10 @@ def all_hashes(cookie)
   urls.map do |url|
     sleep 0.01
     puts "doing #{url}"
+    html = RestClient.get("http://www.pepperplate.com/recipes/#{url}",
+                          cookies: cookie)
 
-    recipe_to_hash("http://www.pepperplate.com/recipes/#{url}",
-                   cookie)
+    page_to_hash(html)
   end
 end
 
