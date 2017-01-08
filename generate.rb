@@ -5,6 +5,7 @@ require 'base64'
 require './lib/parser'
 require './lib/utils'
 require './lib/transfer'
+require './lib/formatter'
 
 def page_to_hash(html)
   parser = Parser.new(html)
@@ -12,10 +13,8 @@ def page_to_hash(html)
   attrs = {
     'name' => parser.name,
     'servings' => parser.servings,
-    'ingredients' => parser.ingredients.join("\n"),
-    'directions' => parser.directions.each_with_index.map{|str, i|
-      "#{i+1}. #{str}"
-    }.join("\n\n")
+    'ingredients' => parser.ingredients,
+    'directions' => parser.directions
   }
 
   img = parser.photo_url
@@ -24,7 +23,7 @@ def page_to_hash(html)
   src = parser.source_url
   attrs['source_url'] = src if src
 
-  attrs
+  Formatter.formatted(attrs)
 end
 
 # get the cookie from the cookie file
