@@ -1,3 +1,6 @@
+require 'open-uri'
+require 'base64'
+
 module Utils
   class<<self
     def url_to_string(image_url)

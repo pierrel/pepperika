@@ -1,6 +1,4 @@
 require 'yaml'
-require 'open-uri'
-require 'base64'
 
 require './lib/parser'
 require './lib/utils'
