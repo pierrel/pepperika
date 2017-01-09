@@ -7,7 +7,7 @@ module Formatter
     hash.each_pair{|key, value| attrs[key] = value}
 
     # make some changes
-    attrs['ingredients'] = attrs['ingredients'].join("\n"),
+    attrs['ingredients'] = attrs['ingredients'].join("\n")
     attrs['directions'] = attrs['directions'].each_with_index.map{|str, i|
       "#{i+1}. #{str}"
     }.join("\n\n")
